@@ -3,7 +3,6 @@ session_start();
 session_unset();
 session_destroy();
 
-// Also delete the session cookie from the browser
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,
@@ -14,4 +13,3 @@ if (ini_get("session.use_cookies")) {
 
 header("Location: login.html");
 exit;
-?>

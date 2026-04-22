@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once 'db.php';
 
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
@@ -10,20 +11,22 @@ if (empty($_SESSION['user_id'])) {
     exit;
 }
 
-$serverName = "localhost";
-$dbUser     = "root";
-$dbPass     = "joyeux@2010";
-$db_name    = "userSignUp";
+$conn = db_connect();
 
-$conn = new mysqli($serverName, $dbUser, $dbPass, $db_name);
-if ($conn->connect_error) exit("Connection failed: " . $conn->connect_error);
-
-$stmt = $conn->prepare("SELECT fname, lname, email, username, gender, created_at FROM user WHERE id = ?");
+$stmt = $conn->prepare(
+    "SELECT fname, lname, email, username, gender, created_at FROM user WHERE id = ?"
+);
 $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
 $stmt->bind_result($fname, $lname, $email, $username, $gender, $created_at);
 $stmt->store_result();
-$stmt->fetch();
+
+if (!$stmt->fetch()) {
+    // User ID in session no longer exists in DB
+    session_destroy();
+    header("Location: login.html");
+    exit;
+}
 
 $joinDate   = date("F j, Y", strtotime($created_at));
 $initial    = strtoupper(($fname[0] ?? '?') . ($lname[0] ?? ''));

@@ -1,3 +1,7 @@
+<?php
+session_start();
+require_once 'db.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,14 +43,18 @@
 
         <div class="error-box" id="errorBox"></div>
 
-        <form action="login.php" method="POST" id="loginForm">
+        <form action="login.php" method="POST" id="loginForm" novalidate>
+            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+
             <div class="field">
                 <label for="userEmail">Email Address</label>
-                <input type="email" name="userEmail" id="userEmail" placeholder="you@example.com" required>
+                <input type="email" name="userEmail" id="userEmail"
+                       placeholder="you@example.com" required autocomplete="email">
             </div>
             <div class="field">
                 <label for="userPassword">Password</label>
-                <input type="password" name="userPassword" id="userPassword" placeholder="••••••••" required>
+                <input type="password" name="userPassword" id="userPassword"
+                       placeholder="••••••••" required autocomplete="current-password">
             </div>
             <button type="submit" class="btn-login"><span>Sign In →</span></button>
         </form>
@@ -57,7 +65,6 @@
 </div>
 
 <script>
-    // Show session errors passed from PHP
     const params = new URLSearchParams(window.location.search);
     const err = params.get('error');
     if (err) {
@@ -68,7 +75,7 @@
 
     document.getElementById('loginForm').addEventListener('submit', e => {
         const email = document.getElementById('userEmail').value.trim();
-        const pwd   = document.getElementById('userPassword').value.trim();
+        const pwd   = document.getElementById('userPassword').value;
         const box   = document.getElementById('errorBox');
 
         if (!email || !pwd) {

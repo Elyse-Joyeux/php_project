@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once 'db.php';
 
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
@@ -10,64 +11,47 @@ if (empty($_SESSION['admin_id'])) {
     exit;
 }
 
-$serverName = "localhost";
-$dbUser     = "root";
-$dbPass     = "joyeux@2010";
-$db_name    = "userSignUp";
+$conn = db_connect();
 
-$conn = new mysqli($serverName, $dbUser, $dbPass, $db_name);
-if ($conn->connect_error) exit("Connection failed: " . $conn->connect_error);
-
-// Handle delete action
+// ─── Handle delete ────────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+    csrf_verify();
     $delId = (int)$_POST['delete_id'];
-    $del = $conn->prepare("DELETE FROM user WHERE id = ?");
+    $del   = $conn->prepare("DELETE FROM user WHERE id = ?");
     $del->bind_param("i", $delId);
     $del->execute();
+    $del->close();
     header("Location: admin.php?msg=deleted");
     exit;
 }
 
-// Search filter
+// ─── Search & fetch ───────────────────────────────────────────────────────
 $search = trim($_GET['search'] ?? '');
 $msg    = $_GET['msg'] ?? '';
 
-// Fetch all users
 if ($search !== '') {
-    $res = $conn->prepare(
-        "SELECT id, fname, lname, email, username, gender, created_at 
-         FROM user 
+    $res  = $conn->prepare(
+        "SELECT id, fname, lname, email, username, gender, created_at
+         FROM user
          WHERE fname LIKE ? OR lname LIKE ? OR email LIKE ? OR username LIKE ?
          ORDER BY created_at DESC"
     );
     $like = "%$search%";
     $res->bind_param("ssss", $like, $like, $like, $like);
 } else {
-    $res = $conn->prepare(
-        "SELECT id, fname, lname, email, username, gender, created_at 
+    $res  = $conn->prepare(
+        "SELECT id, fname, lname, email, username, gender, created_at
          FROM user ORDER BY created_at DESC"
     );
 }
 $res->execute();
-$result = $res->get_result();
-$users  = $result->fetch_all(MYSQLI_ASSOC);
+$users = $res->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Stats
-$totalRes   = $conn->query("SELECT COUNT(*) as c FROM user");
-$totalRow   = $totalRes->fetch_assoc();
-$totalUsers = $totalRow['c'];
-
-$todayRes   = $conn->query("SELECT COUNT(*) as c FROM user WHERE DATE(created_at) = CURDATE()");
-$todayRow   = $todayRes->fetch_assoc();
-$todayNew   = $todayRow['c'];
-
-$maleRes    = $conn->query("SELECT COUNT(*) as c FROM user WHERE gender = 'male'");
-$maleRow    = $maleRes->fetch_assoc();
-$maleCount  = $maleRow['c'];
-
-$femaleRes   = $conn->query("SELECT COUNT(*) as c FROM user WHERE gender = 'female'");
-$femaleRow   = $femaleRes->fetch_assoc();
-$femaleCount = $femaleRow['c'];
+// ─── Stats ────────────────────────────────────────────────────────────────
+$totalUsers  = $conn->query("SELECT COUNT(*) FROM user")->fetch_row()[0];
+$todayNew    = $conn->query("SELECT COUNT(*) FROM user WHERE DATE(created_at) = CURDATE()")->fetch_row()[0];
+$maleCount   = $conn->query("SELECT COUNT(*) FROM user WHERE gender = 'male'")->fetch_row()[0];
+$femaleCount = $conn->query("SELECT COUNT(*) FROM user WHERE gender = 'female'")->fetch_row()[0];
 
 $adminUsername = htmlspecialchars($_SESSION['admin_username']);
 ?>
@@ -133,7 +117,7 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username']);
         .toast { background: #d4edda; border-left: 3px solid var(--green); color: #1a5c2a; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.875rem; margin-bottom: 1.5rem; display: none; }
         .toast.show { display: block; }
 
-        /* USER TABLE PANEL */
+        /* TABLE PANEL */
         .table-panel { background: var(--white); border-radius: 14px; border: 1px solid var(--warm); overflow: hidden; }
         .table-header { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.75rem; border-bottom: 1px solid var(--warm); }
         .table-header h2 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; }
@@ -194,7 +178,6 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username']);
 </head>
 <body>
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
     <div class="sidebar-brand">UserSpace.</div>
     <div class="sidebar-role">Admin Panel</div>
@@ -215,7 +198,6 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username']);
     </div>
 </aside>
 
-<!-- MAIN -->
 <main class="main">
     <div class="topbar">
         <h1>Admin Dashboard</h1>
@@ -223,10 +205,9 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username']);
     </div>
 
     <?php if ($msg === 'deleted'): ?>
-    <div class="toast show">✓ User deleted successfully.</div>
+    <div class="toast show" id="toast">✓ User deleted successfully.</div>
     <?php endif; ?>
 
-    <!-- Stats -->
     <div class="stats-grid">
         <div class="stat-card dark">
             <div class="stat-label">Total Users</div>
@@ -241,16 +222,15 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username']);
         <div class="stat-card">
             <div class="stat-label">Male Users</div>
             <div class="stat-value"><?= $maleCount ?></div>
-            <div class="stat-sub"><?= $totalUsers > 0 ? round($maleCount/$totalUsers*100) : 0 ?>% of total</div>
+            <div class="stat-sub"><?= $totalUsers > 0 ? round($maleCount / $totalUsers * 100) : 0 ?>% of total</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Female Users</div>
             <div class="stat-value"><?= $femaleCount ?></div>
-            <div class="stat-sub"><?= $totalUsers > 0 ? round($femaleCount/$totalUsers*100) : 0 ?>% of total</div>
+            <div class="stat-sub"><?= $totalUsers > 0 ? round($femaleCount / $totalUsers * 100) : 0 ?>% of total</div>
         </div>
     </div>
 
-    <!-- User Table -->
     <div class="table-panel">
         <div class="table-header">
             <h2>Registered Users</h2>
@@ -258,7 +238,9 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username']);
         </div>
         <div class="search-bar">
             <form method="GET" style="display:flex;gap:0.75rem;flex:1">
-                <input type="text" name="search" placeholder="Search by name, email or username…" value="<?= htmlspecialchars($search) ?>">
+                <input type="text" name="search"
+                       placeholder="Search by name, email or username…"
+                       value="<?= htmlspecialchars($search) ?>">
                 <button type="submit">Search</button>
                 <?php if ($search): ?>
                     <a href="admin.php">Clear</a>
@@ -285,13 +267,13 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username']);
                     </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($users as $i => $u):
+                <?php foreach ($users as $u):
                     $uInitial = strtoupper(($u['fname'][0] ?? '?') . ($u['lname'][0] ?? ''));
                     $gClass   = 'gender-' . ($u['gender'] ?: 'other');
                     $joined   = date("M j, Y", strtotime($u['created_at']));
                 ?>
                 <tr>
-                    <td style="color:var(--mid);font-size:0.78rem"><?= $u['id'] ?></td>
+                    <td style="color:var(--mid);font-size:0.78rem"><?= (int)$u['id'] ?></td>
                     <td>
                         <div class="user-cell">
                             <div class="user-avatar"><?= htmlspecialchars($uInitial) ?></div>
@@ -306,7 +288,8 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username']);
                     <td style="color:var(--mid)"><?= $joined ?></td>
                     <td><span class="status-active"><span class="status-dot"></span>Active</span></td>
                     <td>
-                        <button class="btn-delete" onclick="confirmDelete(<?= $u['id'] ?>, '<?= htmlspecialchars($u['fname'] . ' ' . $u['lname'], ENT_QUOTES) ?>')">
+                        <button class="btn-delete"
+                            onclick="confirmDelete(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['fname'] . ' ' . $u['lname'], ENT_QUOTES) ?>')">
                             Delete
                         </button>
                     </td>
@@ -327,6 +310,8 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username']);
         <div class="modal-btns">
             <button class="btn-cancel" onclick="closeModal()">Cancel</button>
             <form method="POST" id="deleteForm">
+                <!-- CSRF token injected here -->
+                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                 <input type="hidden" name="delete_id" id="deleteId">
                 <button type="submit" class="btn-confirm-del">Yes, Delete</button>
             </form>
@@ -343,9 +328,8 @@ function confirmDelete(id, name) {
 function closeModal() {
     document.getElementById('deleteModal').classList.remove('show');
 }
-// Auto-hide toast
 setTimeout(() => {
-    const t = document.querySelector('.toast');
+    const t = document.getElementById('toast');
     if (t) t.style.display = 'none';
 }, 4000);
 </script>
