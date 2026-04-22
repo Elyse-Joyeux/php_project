@@ -3,7 +3,7 @@ session_start();
 require_once 'C:/xampp/private_configs/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: sign_up.html"); exit;
+    header("Location: sign_up.php"); exit;
 }
 
 csrf_verify();
@@ -11,7 +11,7 @@ csrf_verify();
 $conn = db_connect();
 
 function redirect_error(string $msg): never {
-    header("Location: sign_up.html?error=" . urlencode($msg)); exit;
+    header("Location: sign_up.php?error=" . urlencode($msg)); exit;
 }
 
 // ─── Collect & sanitize inputs ────────────────────────────────────────────
