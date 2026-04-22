@@ -3,8 +3,8 @@ session_start();
 require_once 'C:/xampp/private_configs/db.php';
 
 // If already logged in, skip login page
-if (!empty($_SESSION['user_id']))  { header("Location: dashboard.php"); exit; }
-if (!empty($_SESSION['admin_id'])) { header("Location: admin.php");     exit; }
+if (!empty($_SESSION['user_id']))  { header("Location: Userdashboard.php"); exit; }
+if (!empty($_SESSION['admin_id'])) { header("Location: Admin.php");     exit; }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -64,7 +64,7 @@ if (!empty($_SESSION['admin_id'])) { header("Location: admin.php");     exit; }
         </form>
 
         <div class="divider">or</div>
-        <div class="link-signup">Don't have an account? <a href="sign_up.html">Create one</a></div>
+        <div class="link-signup">Don't have an account? <a href="sign_up.php">Create one</a></div>
     </div>
 </div>
 
