@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'C:/xampp/private_configs/db.php';
+require_once __DIR__ . '/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: sign_up.php"); exit;
@@ -14,7 +14,7 @@ function redirect_error(string $msg): never {
     header("Location: sign_up.php?error=" . urlencode($msg)); exit;
 }
 
-// ─── Collect & sanitize inputs ────────────────────────────────────────────
+//  Collect & sanitize inputs 
 $fname      = trim($_POST['userFname']           ?? '');
 $lname      = trim($_POST['userLname']           ?? '');
 $email      = trim($_POST['userEmail']           ?? '');
@@ -27,7 +27,7 @@ $cohort     = trim($_POST['cohort']              ?? '');
 $track      = trim($_POST['track']               ?? '');
 $phone      = trim($_POST['phone']               ?? '');
 
-// ─── Validation ───────────────────────────────────────────────────────────
+//  Validation 
 if (empty($fname) || empty($lname) || empty($email) || empty($username) || empty($pwd)) {
     redirect_error("All required fields must be filled.");
 }
@@ -56,7 +56,7 @@ if (!empty($phone) && !preg_match('/^\+?[\d\s\-]{7,20}$/', $phone)) {
     redirect_error("Please enter a valid phone number.");
 }
 
-// ─── Duplicate check ──────────────────────────────────────────────────────
+//  Duplicate check ─
 $check = $conn->prepare("SELECT id FROM user WHERE email = ? OR username = ?");
 $check->bind_param("ss", $email, $username);
 $check->execute();
@@ -66,7 +66,7 @@ if ($check->num_rows > 0) {
 }
 $check->close();
 
-// ─── Student ID uniqueness ────────────────────────────────────────────────
+//  Student ID uniqueness ─
 if (!empty($student_id)) {
     $sidCheck = $conn->prepare("SELECT id FROM user WHERE student_id = ?");
     $sidCheck->bind_param("s", $student_id);
@@ -78,7 +78,7 @@ if (!empty($student_id)) {
     $sidCheck->close();
 }
 
-// ─── Insert ───────────────────────────────────────────────────────────────
+//  Insert ─
 $hash = password_hash($pwd, PASSWORD_BCRYPT, ['cost' => 12]);
 
 $sidVal    = $student_id ?: null;
