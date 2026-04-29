@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/db.php';
+require_once 'C:/xampp/private_configs/db.php';
 if (!empty($_SESSION['user_id'])) { header("Location: Userdashboard.php"); exit; }
 $err = htmlspecialchars($_GET['error'] ?? '');
 ?>
@@ -145,7 +145,7 @@ $err = htmlspecialchars($_GET['error'] ?? '');
         </form>
 
         <div class="divider">or</div>
-        <div class="link-login">Already have an account? <a href="UserLogin.html">Sign in</a></div>
+        <div class="link-login">Already have an account? <a href="UserLogin-form.php">Sign in</a></div>
     </div>
 </div>
 
