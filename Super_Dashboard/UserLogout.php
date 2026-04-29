@@ -20,5 +20,5 @@ if (ini_get("session.use_cookies")) {
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
-header("Location: UserLogin.html");
+header("Location: UserLogin-form.php");
 exit;
