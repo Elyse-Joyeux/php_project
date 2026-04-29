@@ -2,7 +2,6 @@
 session_start();
 require_once __DIR__ . '/db.php';
 
-// If already logged in, skip login page
 if (!empty($_SESSION['user_id']))  { header("Location: Userdashboard.php"); exit; }
 if (!empty($_SESSION['admin_id'])) { header("Location: Admin.php");     exit; }
 ?>
@@ -15,6 +14,11 @@ if (!empty($_SESSION['admin_id'])) { header("Location: Admin.php");     exit; }
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="UserLogin.css">
+    <style>
+        .forgot-link { text-align:right; font-size:.8rem; margin-top:-.5rem; margin-bottom:1rem; }
+        .forgot-link a { color:var(--rust); text-decoration:none; font-weight:500; }
+        .forgot-link a:hover { text-decoration:underline; }
+    </style>
 </head>
 <body>
 
@@ -47,6 +51,7 @@ if (!empty($_SESSION['admin_id'])) { header("Location: Admin.php");     exit; }
                        placeholder="you@rca.ac.rw" required autocomplete="email"
                        aria-required="true">
             </div>
+
             <div class="field">
                 <label for="userPassword">Password</label>
                 <div class="password-wrap">
@@ -56,6 +61,11 @@ if (!empty($_SESSION['admin_id'])) { header("Location: Admin.php");     exit; }
                     <button type="button" class="toggle-pwd" aria-label="Toggle password visibility"
                             onclick="togglePwd('userPassword', this)">👁</button>
                 </div>
+            </div>
+
+            <!-- Forgot password link -->
+            <div class="forgot-link">
+                <a href="ForgotPassword.php">Forgot your password?</a>
             </div>
 
             <button type="submit" class="btn-login" id="submitBtn">
@@ -69,38 +79,28 @@ if (!empty($_SESSION['admin_id'])) { header("Location: Admin.php");     exit; }
 </div>
 
 <script>
-    // Show server-side error from query string
     const params = new URLSearchParams(window.location.search);
     const err = params.get('error');
     if (err) {
         const box = document.getElementById('errorBox');
         box.textContent = decodeURIComponent(err);
         box.classList.add('show');
-        // Clean URL without reloading
         history.replaceState(null, '', window.location.pathname);
     }
 
-    // Client-side validation
     document.getElementById('loginForm').addEventListener('submit', e => {
         const email = document.getElementById('userEmail').value.trim();
         const pwd   = document.getElementById('userPassword').value;
         const box   = document.getElementById('errorBox');
+        const show  = msg => { e.preventDefault(); box.textContent = msg; box.classList.add('show'); };
 
-        const show = msg => {
-            e.preventDefault();
-            box.textContent = msg;
-            box.classList.add('show');
-        };
+        if (!email || !pwd)                                          return show('Please fill in all fields.');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))             return show('Please enter a valid email address.');
 
-        if (!email || !pwd)             return show('Please fill in all fields.');
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return show('Please enter a valid email address.');
-
-        // Show loading state
         document.getElementById('submitBtn').disabled = true;
         document.getElementById('submitBtn').querySelector('span').textContent = 'Signing in…';
     });
 
-    // Toggle password visibility
     function togglePwd(inputId, btn) {
         const input = document.getElementById(inputId);
         const show  = input.type === 'password';
