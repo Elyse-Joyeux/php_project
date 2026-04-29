@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'C:/xampp/private_configs/db.php';
+require_once __DIR__ . '/db.php';
 
 // Already logged in → redirect away
 if (!empty($_SESSION['user_id']))  { header("Location: Userdashboard.php"); exit; }
@@ -27,12 +27,12 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     login_error("Invalid email format.");
 }
 
-// ─── Rate limit check ─────────────────────────────────────────────────────
+//  Rate limit check 
 if (rate_limit_check($conn, $email)) {
     login_error("Too many login attempts. Please wait 15 minutes and try again.");
 }
 
-// ─── Admin check ──────────────────────────────────────────────────────────
+//  Admin check 
 $adminStmt = $conn->prepare("SELECT id, username, password FROM admin WHERE email = ?");
 $adminStmt->bind_param("s", $email);
 $adminStmt->execute();
@@ -49,7 +49,7 @@ if ($adminStmt->num_rows > 0 && password_verify($pwd, $adminHash)) {
 }
 $adminStmt->close();
 
-// ─── Student login ────────────────────────────────────────────────────────
+//  Student login 
 $stmt = $conn->prepare(
     "SELECT id, fname, lname, email, username, password, status FROM user WHERE email = ?"
 );
@@ -67,12 +67,12 @@ if ($stmt->num_rows === 0) {
 }
 $stmt->close();
 
-// ─── Status check ─────────────────────────────────────────────────────────
+//  Status check 
 if ($status === 'suspended') {
     login_error("Your account has been suspended. Contact an administrator.");
 }
 
-// ─── Verify password ──────────────────────────────────────────────────────
+//  Verify password 
 $loggedIn    = false;
 $needsRehash = false;
 
@@ -92,7 +92,7 @@ if (!$loggedIn) {
     login_error("Invalid email or password.");
 }
 
-// ─── Upgrade hash if needed ───────────────────────────────────────────────
+//  Upgrade hash if needed 
 if ($needsRehash) {
     $newHash = password_hash($pwd, PASSWORD_BCRYPT, ['cost' => 12]);
     $upd     = $conn->prepare("UPDATE user SET password = ? WHERE id = ?");
@@ -101,7 +101,7 @@ if ($needsRehash) {
     $upd->close();
 }
 
-// ─── Log activity ─────────────────────────────────────────────────────────
+//  Log activity 
 $log = $conn->prepare("INSERT INTO activity_log (user_id, action) VALUES (?, 'Signed in')");
 if ($log) { $log->bind_param("i", $id); $log->execute(); $log->close(); }
 
