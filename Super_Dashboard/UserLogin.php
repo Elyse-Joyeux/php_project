@@ -7,7 +7,7 @@ if (!empty($_SESSION['user_id']))  { header("Location: Userdashboard.php"); exit
 if (!empty($_SESSION['admin_id'])) { header("Location: Admin.php");     exit; }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: UserLogin.html"); exit;
+    header("Location: UserLogin-form.php"); exit;
 }
 
 csrf_verify();
@@ -17,7 +17,7 @@ $email = trim($_POST['userEmail']   ?? '');
 $pwd   = $_POST['userPassword']     ?? '';
 
 function login_error(string $msg): never {
-    header("Location: UserLogin.html?error=" . urlencode($msg)); exit;
+    header("Location: UserLogin-form.php?error=" . urlencode($msg)); exit;
 }
 
 if (empty($email) || empty($pwd)) {
