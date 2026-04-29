@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS admin (
     email        VARCHAR(180) UNIQUE NOT NULL,
     password     VARCHAR(255) NOT NULL,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --  login_attempts (rate-limiting) 
 CREATE TABLE IF NOT EXISTS login_attempts (
@@ -48,6 +48,21 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     email        VARCHAR(180) NOT NULL,
     attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_email_time (email, attempted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--  activity logs 
+CREATE TABLE IF NOT EXISTS activity_log (
+    id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id      INT UNSIGNED DEFAULT NULL,
+    admin_id     INT UNSIGNED DEFAULT NULL,
+    action       VARCHAR(100) NOT NULL,
+    details      TEXT DEFAULT NULL,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_admin_id (admin_id),
+    INDEX idx_action (action),
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --  activity_log 
