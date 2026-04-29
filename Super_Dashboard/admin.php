@@ -7,7 +7,7 @@ header("Pragma: no-cache");
 header("Expires: 0");
 
 if (empty($_SESSION['admin_id'])) {
-    header("Location: UserLogin.html"); exit;
+    header("Location: UserLogin-form.php"); exit;
 }
 
 $conn = db_connect();
@@ -125,7 +125,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         }
         body { min-height:100vh; background:var(--cream); font-family:'DM Sans',sans-serif; color:var(--ink); display:flex; }
 
-        /*  SIDEBAR  */
+        /* ── SIDEBAR ── */
         .sidebar { width:var(--sidebar-w); background:var(--ink); min-height:100vh; display:flex; flex-direction:column; padding:2rem 1.5rem; position:fixed; top:0; left:0; z-index:100; }
         .sidebar-brand { font-family:'DM Serif Display',serif; font-size:1.4rem; color:var(--cream); margin-bottom:.3rem; }
         .sidebar-role { font-size:.7rem; text-transform:uppercase; letter-spacing:.12em; color:var(--rust); margin-bottom:2.5rem; }
@@ -142,7 +142,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         .logout-btn { display:flex; align-items:center; gap:.75rem; padding:.65rem .85rem; border-radius:8px; color:var(--mid); font-size:.875rem; text-decoration:none; margin-top:.5rem; transition:background .15s,color .15s; }
         .logout-btn:hover { background:rgba(201,74,42,.15); color:#e8683e; }
 
-        /*  MAIN  */
+        /* ── MAIN ── */
         .main { margin-left:var(--sidebar-w); flex:1; padding:2.5rem 3rem; }
         .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2.5rem; flex-wrap:wrap; gap:1rem; }
         .topbar h1 { font-family:'DM Serif Display',serif; font-size:1.9rem; letter-spacing:-.02em; }
@@ -151,7 +151,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         .export-btn { background:var(--ink); color:var(--cream); border:none; border-radius:8px; padding:.5rem 1rem; font-family:'DM Sans',sans-serif; font-size:.85rem; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:.4rem; transition:background .15s; }
         .export-btn:hover { background:var(--rust); }
 
-        /*  STATS  */
+        /* ── STATS ── */
         .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; margin-bottom:2rem; }
         .stat-card { background:var(--white); border-radius:14px; padding:1.4rem 1.5rem; border:1px solid var(--warm); transition:transform .2s,box-shadow .2s; }
         .stat-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,.07); }
@@ -162,19 +162,19 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         .stat-card.dark .stat-value { color:var(--cream); }
         .stat-sub { font-size:.78rem; color:var(--mid); margin-top:.3rem; }
 
-        /*  TOAST  */
+        /* ── TOAST ── */
         .toast { padding:.75rem 1rem; border-radius:8px; font-size:.875rem; margin-bottom:1.5rem; display:none; }
         .toast.show { display:block; }
         .toast.success { background:#d4edda; border-left:3px solid var(--green); color:#1a5c2a; }
         .toast.warning { background:#fff3cd; border-left:3px solid #e8a020; color:#7a5000; }
 
-        /*  TABLE PANEL  */
+        /* ── TABLE PANEL ── */
         .table-panel { background:var(--white); border-radius:14px; border:1px solid var(--warm); overflow:hidden; }
         .table-header { display:flex; align-items:center; justify-content:space-between; padding:1.5rem 1.75rem; border-bottom:1px solid var(--warm); flex-wrap:wrap; gap:.75rem; }
         .table-header h2 { font-family:'DM Serif Display',serif; font-size:1.3rem; }
         .count { font-size:.8rem; color:var(--mid); background:var(--cream); padding:.3rem .75rem; border-radius:20px; border:1px solid var(--warm); }
 
-        /*  FILTERS  */
+        /* ── FILTERS ── */
         .filters { display:flex; gap:.75rem; padding:1rem 1.75rem; border-bottom:1px solid var(--warm); background:#fafaf8; flex-wrap:wrap; }
         .filters input, .filters select {
             padding:.65rem 1rem; border:1.5px solid var(--warm); border-radius:8px;
@@ -188,7 +188,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         .filters a.clear { padding:.65rem 1rem; background:transparent; color:var(--mid); border:1.5px solid var(--warm); border-radius:8px; font-size:.875rem; text-decoration:none; display:flex; align-items:center; white-space:nowrap; }
         .filters a.clear:hover { border-color:var(--mid); color:var(--ink); }
 
-        /*  TABLE  */
+        /* ── TABLE ── */
         .table-wrap { overflow-x:auto; }
         table { width:100%; border-collapse:collapse; }
         thead tr { background:#fafaf8; }
@@ -218,7 +218,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         .btn-delete  { background:#fde8e4; color:var(--red); }
         .btn-action:hover { opacity:.8; }
 
-        /*  PAGINATION  */
+        /* ── PAGINATION ── */
         .pagination { display:flex; align-items:center; justify-content:center; gap:.5rem; padding:1.25rem; border-top:1px solid var(--warm); }
         .pagination a, .pagination span {
             padding:.4rem .8rem; border-radius:6px; font-size:.85rem; text-decoration:none;
@@ -227,11 +227,11 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         .pagination a:hover { background:var(--cream); color:var(--ink); }
         .pagination .current { background:var(--rust); color:white; border-color:var(--rust); }
 
-        /*  EMPTY STATE  */
+        /* ── EMPTY STATE ── */
         .empty-state { text-align:center; padding:4rem 2rem; color:var(--mid); }
         .empty-state .icon { font-size:3rem; margin-bottom:1rem; opacity:.3; }
 
-        /*  MODAL  */
+        /* ── MODAL ── */
         .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200; align-items:center; justify-content:center; }
         .modal-overlay.show { display:flex; }
         .modal { background:var(--white); border-radius:16px; padding:2rem; max-width:400px; width:90%; box-shadow:0 24px 48px rgba(0,0,0,.15); }
