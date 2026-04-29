@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'C:/xampp/private_configs/db.php';
+require_once __DIR__ . '/db.php';
 
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
@@ -29,7 +29,7 @@ if (!$stmt->fetch()) {
 }
 $stmt->close();
 
-// ─── Activity log (last 5 actions) ───────────────────────────────────────
+//  Activity log (last 5 actions) 
 $actStmt = $conn->prepare(
     "SELECT action, logged_at FROM activity_log
      WHERE user_id = ? ORDER BY logged_at DESC LIMIT 5"
