@@ -1,10 +1,9 @@
 <?php
 //  Database Configuration 
-// SECURITY: Move this file outside your web root in production,
-// or restrict access via .htaccess / server config.
+
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
-define('DB_PASS', 'joyeux@2010');   // ← CHANGE before deploying
+define('DB_PASS', 'joyeux@2010');   
 define('DB_NAME', 'userSignUp');
 
 function db_connect(): mysqli {
