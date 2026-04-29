@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'C:/xampp/private_configs/db.php';
+require_once __DIR__ . '/db.php';
 if (!empty($_SESSION['user_id'])) { header("Location: Userdashboard.php"); exit; }
 $err = htmlspecialchars($_GET['error'] ?? '');
 ?>
