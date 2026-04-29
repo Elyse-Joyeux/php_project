@@ -29,10 +29,11 @@ if (!$stmt->fetch()) {
 }
 $stmt->close();
 
-//  Activity log (last 5 actions) 
-$actStmt = $conn->prepare(
-    "SELECT action, logged_at FROM activity_log
-     WHERE user_id = ? ORDER BY logged_at DESC LIMIT 5"
+// Activity log (last 5 actions) — supports both logged_at and created_at column names
+$actCol   = 'created_at'; // change to 'logged_at' if your table uses that column
+$actStmt  = $conn->prepare(
+    "SELECT action, $actCol AS logged_at FROM activity_log
+     WHERE user_id = ? ORDER BY $actCol DESC LIMIT 5"
 );
 $actStmt->bind_param("i", $_SESSION['user_id']);
 $actStmt->execute();
@@ -53,9 +54,7 @@ $statusColor = $status === 'active' ? '#2a9d2a' : ($status === 'suspended' ? '#d
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard — RCA Student Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="Userdashboard.css">
-    <style>.avatar-large::after { content: '<?= $genderIcon ?>'; }</style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -63,11 +62,12 @@ $statusColor = $status === 'active' ? '#2a9d2a' : ($status === 'suspended' ? '#d
     <div class="sidebar-brand">RCA Portal.</div>
     <div class="nav-label">Menu</div>
     <a href="Userdashboard.php" class="nav-item active" aria-current="page"><span class="nav-icon">⊞</span> Dashboard</a>
-    <a href="#" class="nav-item"><span class="nav-icon">◎</span> Profile</a>
-    <a href="#" class="nav-item"><span class="nav-icon">◈</span> Settings</a>
+    <a href="UserProfile.php"   class="nav-item"><span class="nav-icon">◎</span> Profile</a>
+    <a href="UserSettings.php"  class="nav-item"><span class="nav-icon">◈</span> Settings</a>
     <div class="nav-label">Account</div>
-    <a href="#" class="nav-item"><span class="nav-icon">◇</span> Security</a>
-    <a href="#" class="nav-item"><span class="nav-icon">⬡</span> Notifications</a>
+    <a href="UserActivityLog.php"                     class="nav-item"><span class="nav-icon">📋</span> Activity Log</a>
+    <a href="UserSettings.php?section=security"      class="nav-item"><span class="nav-icon">◇</span> Security</a>
+    <a href="UserSettings.php?section=notifications" class="nav-item"><span class="nav-icon">⬡</span> Notifications</a>
     <div class="sidebar-footer">
         <div class="user-mini">
             <div class="avatar-mini" aria-hidden="true"><?= htmlspecialchars($initial) ?></div>
@@ -138,6 +138,9 @@ $statusColor = $status === 'active' ? '#2a9d2a' : ($status === 'suspended' ? '#d
             <div class="info-row"><span class="info-key">Track</span><span class="info-val"><?= htmlspecialchars($track) ?></span></div>
             <?php endif; ?>
             <div class="info-row"><span class="info-key">Joined</span><span class="info-val"><?= htmlspecialchars($joinDate) ?></span></div>
+            <div style="margin-top:1.25rem;">
+                <a href="UserProfile.php" style="display:inline-block; padding:.6rem 1.25rem; background:var(--ink); color:var(--cream); border-radius:8px; text-decoration:none; font-size:.875rem; font-weight:500;">Edit Profile →</a>
+            </div>
         </div>
 
         <div class="activity-panel">
