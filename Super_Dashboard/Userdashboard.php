@@ -7,7 +7,7 @@ header("Pragma: no-cache");
 header("Expires: 0");
 
 if (empty($_SESSION['user_id'])) {
-    header("Location: UserLogin.html"); exit;
+    header("Location: UserLogin-form.php"); exit;
 }
 
 $conn = db_connect();
@@ -25,7 +25,7 @@ $stmt->store_result();
 
 if (!$stmt->fetch()) {
     session_destroy();
-    header("Location: UserLogin.html"); exit;
+    header("Location: UserLogin-form.php"); exit;
 }
 $stmt->close();
 
