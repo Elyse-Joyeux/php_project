@@ -34,31 +34,34 @@ function csrf_verify(): void {
     }
 }
 
-//  Rate Limiting 
+//  Rate Limiting
+// Only checks the count — does NOT record an attempt itself
 function rate_limit_check(mysqli $conn, string $email, int $maxAttempts = 5, int $windowSeconds = 900): bool {
     $cutoff = date('Y-m-d H:i:s', time() - $windowSeconds);
-    
+
     // Clean old attempts
     $clean = $conn->prepare("DELETE FROM login_attempts WHERE attempted_at < ?");
     $clean->bind_param("s", $cutoff);
     $clean->execute();
     $clean->close();
-    
-    // Count recent attempts
+
+    // Count recent failed attempts
     $check = $conn->prepare("SELECT COUNT(*) FROM login_attempts WHERE email = ? AND attempted_at > ?");
     $check->bind_param("ss", $email, $cutoff);
     $check->execute();
     $check->bind_result($count);
     $check->fetch();
     $check->close();
-    
-    // Record this attempt
+
+    return $count >= $maxAttempts;
+}
+
+// Records a failed login attempt — call this only on failure
+function rate_limit_record(mysqli $conn, string $email): void {
     $record = $conn->prepare("INSERT INTO login_attempts (email) VALUES (?)");
     $record->bind_param("s", $email);
     $record->execute();
     $record->close();
-    
-    return $count >= $maxAttempts;
 }
 
 //  Activity Logging 
@@ -71,7 +74,7 @@ function log_activity(mysqli $conn, ?int $userId, string $action, ?string $detai
     return $result;
 }
 
-//  Password Verification ─
+//  Password Verification
 function verify_password(string $password, string $hash): bool {
     return password_verify($password, $hash);
 }
@@ -96,19 +99,19 @@ function update_user(mysqli $conn, int $id, array $updates): bool {
     $set_clauses = [];
     $params = [];
     $types = '';
-    
+
     foreach ($updates as $field => $value) {
         if (!in_array($field, $allowed_fields, true)) continue;
         $set_clauses[] = "$field = ?";
         $params[] = $value;
         $types .= is_int($value) ? 'i' : 's';
     }
-    
+
     if (empty($set_clauses)) return false;
-    
+
     $params[] = $id;
     $types .= 'i';
-    
+
     $query = "UPDATE user SET " . implode(", ", $set_clauses) . " WHERE id = ?";
     $stmt = $conn->prepare($query);
     if (!$stmt) return false;
